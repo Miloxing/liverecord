@@ -74,7 +74,7 @@ function getlivestatus(){
 	local FULL_URL=$3
 	local EXCEPT=$4
 	local STATUS=0
-	local LOCAL_PAGE=""
+	LOCAL_PAGE=""
 	
 	if [[ $TYPE == "youtube"* ]]; then
 		if [[ -n $YOU_COOKIES ]]; then
@@ -101,54 +101,54 @@ function getlivestatus(){
 		fi
 	fi
 	if [[ $TYPE == "twitcast"* ]]; then
-		local LOCAL_PAGE=$(wget -q -O- "https://twitcasting.tv/streamserver.php?target=${PART_URL}&mode=client")
+		LOCAL_PAGE=$(wget -q -O- "https://twitcasting.tv/streamserver.php?target=${PART_URL}&mode=client")
 		if (echo $LOCAL_PAGE | grep -q '"live":true'); then STATUS=1; fi
 	fi
 	if [[ $TYPE == "twitch" ]]; then
-		local LOCAL_PAGE=$(streamlink --stream-url "$FULL_URL" "$FORMAT")
+		LOCAL_PAGE=$(streamlink --stream-url "$FULL_URL" "$FORMAT")
 		if (echo $LOCAL_PAGE | grep -q ".m3u8"); then STATUS=1; fi
 	fi
 	if [[ $TYPE == "openrec" ]]; then
-		local LOCAL_PAGE=$(wget -q -O- "$FULL_URL" | grep -o 'href="https://www.openrec.tv/live/.*" class' | head -n 1 | awk -F'"' '{print $2}')
+		LOCAL_PAGE=$(wget -q -O- "$FULL_URL" | grep -o 'href="https://www.openrec.tv/live/.*" class' | head -n 1 | awk -F'"' '{print $2}')
 		if [[ -n $LOCAL_PAGE ]]; then STATUS=1; fi
 	fi
 	if [[ $TYPE == "nicolv" ]]; then
-		local LOCAL_PAGE=$(curl -s -I "https://live.nicovideo.jp/gate/${PART_URL}" | grep -o "https://live2.nicovideo.jp/watch/lv[0-9]*")
+		LOCAL_PAGE=$(curl -s -I "https://live.nicovideo.jp/gate/${PART_URL}" | grep -o "https://live2.nicovideo.jp/watch/lv[0-9]*")
 		if [[ -n $LOCAL_PAGE ]]; then STATUS=1; fi
 	fi
 	if [[ $TYPE == "nicoco" ]]; then
-		local LOCAL_PAGE=$(wget -q -O- "https://com.nicovideo.jp/community/${PART_URL}" | grep -o '<a class="now_live_inner" href="https://live.nicovideo.jp/watch/lv[0-9]*' | head -n 1 | awk -F'"?' '{print $4}')
+		LOCAL_PAGE=$(wget -q -O- "https://com.nicovideo.jp/community/${PART_URL}" | grep -o '<a class="now_live_inner" href="https://live.nicovideo.jp/watch/lv[0-9]*' | head -n 1 | awk -F'"?' '{print $4}')
 		if [[ -n $LOCAL_PAGE ]]; then STATUS=1; fi
 	fi
 	if [[ $TYPE == "nicoch" ]]; then
-		local LOCAL_PAGE=$(wget -q -O- "https://ch.nicovideo.jp/${PART_URL}/live" | awk 'BEGIN{RS="<section class=";FS="\n";ORS="\n";OFS="\t"} $1 ~ /sub now/ {LIVE_POS=match($0,"https://live.nicovideo.jp/watch/lv[0-9]*");LIVE=substr($0,LIVE_POS,RLENGTH);print LIVE}' | head -n 1)
+		LOCAL_PAGE=$(wget -q -O- "https://ch.nicovideo.jp/${PART_URL}/live" | awk 'BEGIN{RS="<section class=";FS="\n";ORS="\n";OFS="\t"} $1 ~ /sub now/ {LIVE_POS=match($0,"https://live.nicovideo.jp/watch/lv[0-9]*");LIVE=substr($0,LIVE_POS,RLENGTH);print LIVE}' | head -n 1)
 		if [[ -n $LOCAL_PAGE ]]; then STATUS=1; else
-			local LOCAL_PAGE=$(wget -q -O- "https://ch.nicovideo.jp/${PART_URL}" | grep -o "data-live_id=\"[0-9]*\" data-live_status=\"onair\"" | head -n 1 | awk -F'"' '{print $2}')
+			LOCAL_PAGE=$(wget -q -O- "https://ch.nicovideo.jp/${PART_URL}" | grep -o "data-live_id=\"[0-9]*\" data-live_status=\"onair\"" | head -n 1 | awk -F'"' '{print $2}')
 			if [[ -n $LOCAL_PAGE ]]; then STATUS=1; fi
 		fi
 	fi
 	if [[ $TYPE == "mirrativ" ]]; then
-		local LOCAL_PAGE=$(wget -q -O- "https://www.mirrativ.com/api/user/profile?user_id=${PART_URL}" | grep -o '"live_id":".*"' | awk -F'"' '{print $4}')
+		LOCAL_PAGE=$(wget -q -O- "https://www.mirrativ.com/api/user/profile?user_id=${PART_URL}" | grep -o '"live_id":".*"' | awk -F'"' '{print $4}')
 		if [[ -n $LOCAL_PAGE ]]; then STATUS=1; fi
 	fi
 	if [[ $TYPE == "reality" ]]; then
-		local LOCAL_PAGE=$(curl -s -X POST "https://media-prod-dot-vlive-prod.appspot.com/api/v1/media/lives_user" | awk -v PART_URL="${PART_URL}" 'BEGIN{RS="\"StreamingServer\"";FS=",";ORS="\n";OFS="\t"} {M3U8_POS=match($0,"\"view_endpoint\":\"[^\"]*\"");M3U8=substr($0,M3U8_POS,RLENGTH) ; ID_POS=match($0,"\"vlive_id\":\"[^\"]*\"");ID=substr($0,ID_POS,RLENGTH) ; if(match($0,"\"nickname\":\"[^\"]*"PART_URL"[^\"]*\"|\"vlive_id\":\""PART_URL"\"")) print M3U8,ID}' | head -n 1)
+		LOCAL_PAGE=$(curl -s -X POST "https://media-prod-dot-vlive-prod.appspot.com/api/v1/media/lives_user" | awk -v PART_URL="${PART_URL}" 'BEGIN{RS="\"StreamingServer\"";FS=",";ORS="\n";OFS="\t"} {M3U8_POS=match($0,"\"view_endpoint\":\"[^\"]*\"");M3U8=substr($0,M3U8_POS,RLENGTH) ; ID_POS=match($0,"\"vlive_id\":\"[^\"]*\"");ID=substr($0,ID_POS,RLENGTH) ; if(match($0,"\"nickname\":\"[^\"]*"PART_URL"[^\"]*\"|\"vlive_id\":\""PART_URL"\"")) print M3U8,ID}' | head -n 1)
 		if [[ -n $LOCAL_PAGE ]]; then STATUS=1; fi
 	fi
 	if [[ $TYPE == "17live" ]]; then
-		local LOCAL_PAGE=$(curl -s -X POST "https://api-dsa.17app.co/api/v1/lives/${PART_URL}/viewers/alive" --data-raw "{\"liveStreamID\": \"${PART_URL}\"}" | grep -o '"webUrl":"[^"]*' | awk -F'\"' '{print $4}')
+		LOCAL_PAGE=$(curl -s -X POST "https://api-dsa.17app.co/api/v1/lives/${PART_URL}/viewers/alive" --data-raw "{\"liveStreamID\": \"${PART_URL}\"}" | grep -o '"webUrl":"[^"]*' | awk -F'\"' '{print $4}')
 		if [[ -n "${LOCAL_PAGE}" ]]; then STATUS=1; fi
 	fi
 	if [[ $TYPE == "chaturbate" ]]; then
-		local LOCAL_PAGE=$(curl -s "https://chaturbate.com/${PART_URL}/" | grep -o "https://edge[0-9]*.stream.highwebmedia.com.*/playlist.m3u8" | sed 's/\\u002D/-/g')
+		LOCAL_PAGE=$(curl -s "https://chaturbate.com/${PART_URL}/" | grep -o "https://edge[0-9]*.stream.highwebmedia.com.*/playlist.m3u8" | sed 's/\\u002D/-/g')
 		if [[ -n $LOCAL_PAGE ]]; then STATUS=1; fi
 	fi
 	if [[ $TYPE == "streamlink" ]]; then
-		local LOCAL_PAGE=$(streamlink --stream-url "$FULL_URL" "$FORMAT")
+		LOCAL_PAGE=$(streamlink --stream-url "$FULL_URL" "$FORMAT")
 		if (echo $LOCAL_PAGE | grep -Eq ".m3u8|.flv|rtmp:|The stream specified cannot be translated to a URL"); then STATUS=1; fi
 	fi
 	if [[ $TYPE == "bilibili"* ]]; then
-		local LOCAL_PAGE=$(wget -q -O- "https://api.live.bilibili.com/room/v1/Room/get_info?room_id=${PART_URL}" | grep -o '"live_status":1')
+		LOCAL_PAGE=$(wget -q -O- "https://api.live.bilibili.com/room/v1/Room/get_info?room_id=${PART_URL}" | grep -o '"live_status":1')
 		if [[ -n $LOCAL_PAGE ]]; then STATUS=1; fi
 	fi
 	
